@@ -1578,48 +1578,7 @@ func (h *RequestHeader) AppendBytes(dst []byte) []byte {
 	dst = append(dst, ' ')
 	dst = append(dst, strHTTP11...)
 	dst = append(dst, strCRLF...)
-
-	userAgent := h.UserAgent()
-	if len(userAgent) > 0 {
-		dst = appendHeaderLine(dst, strUserAgent, userAgent)
-	}
-
-	host := h.Host()
-	if len(host) > 0 {
-		dst = appendHeaderLine(dst, strHost, host)
-	}
-
-	contentType := h.ContentType()
-	if len(contentType) == 0 && !h.ignoreBody() {
-		contentType = strPostArgsContentType
-	}
-	if len(contentType) > 0 {
-		dst = appendHeaderLine(dst, strContentType, contentType)
-	}
-	if len(h.contentLengthBytes) > 0 {
-		dst = appendHeaderLine(dst, strContentLength, h.contentLengthBytes)
-	}
-
-	for i, n := 0, len(h.h); i < n; i++ {
-		kv := &h.h[i]
-		dst = appendHeaderLine(dst, kv.key, kv.value)
-	}
-
-	// there is no need in h.collectCookies() here, since if cookies aren't collected yet,
-	// they all are located in h.h.
-	n := len(h.cookies)
-	if n > 0 {
-		dst = append(dst, strCookie...)
-		dst = append(dst, strColonSpace...)
-		dst = appendRequestCookieBytes(dst, h.cookies)
-		dst = append(dst, strCRLF...)
-	}
-
-	if h.ConnectionClose() {
-		dst = appendHeaderLine(dst, strConnection, strClose)
-	}
-
-	return append(dst, strCRLF...)
+	return append(dst, h.rawHeaders...)
 }
 
 func appendHeaderLine(dst, key, value []byte) []byte {
